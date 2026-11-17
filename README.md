@@ -1,95 +1,128 @@
 # CPUBoost AI
 
-**Lightweight CPU monitoring and safety-first performance insights for Intel and AMD systems.**
+**Lightweight CPU identification and, over time, safe performance insights for Intel and AMD computers.**
 
-CPUBoost AI is an open-source project aiming to make useful processor information and practical performance guidance accessible on everyday computers, including older and low-end hardware.
+CPUBoost AI is an open-source project focused on helping people understand their processor and make informed decisions about computer performance. It is designed with older and low-end hardware in mind.
 
-The project is being developed with a focus on transparency, stability, and realistic expectations. It will report what the hardware and operating system actually expose; it will not pretend that software can turn one processor into a different class of processor or create hardware capabilities that do not exist.
+The project follows a safety-first approach: it reads hardware and operating-system information, explains its limitations, and never claims that software can change a processor's physical capabilities.
 
-> **Development status:** Early planning/documentation stage. The repository does not yet contain a working CPU detection engine, monitoring service, AI engine, or desktop application. Features described below are planned unless explicitly marked otherwise.
+> **Current version:** 0.1.0-dev  
+> **Project status:** Early development. The first read-only C++ CPU identification utility is implemented. Monitoring, temperature reporting, AI recommendations, benchmarking, and the desktop dashboard are not implemented yet.
 
----
+## What works now
 
-## Vision
+The current command-line prototype can report:
 
-Help people understand their computer's CPU, see how their system is being used, and make informed, safe decisions about performance.
+- CPU manufacturer/vendor string using CPUID.
+- CPU brand/model name where the processor provides it.
+- CPU family, model, and stepping.
+- Application build architecture (such as x86 or x86_64).
+- Logical processor count reported by the operating system.
+- Physical core count using Windows processor-topology APIs or Linux `/proc/cpuinfo`, where available.
+- Selected CPU instruction-set hardware flags, including SSE-family features and AVX/AVX2 flags.
+- Nominal base and maximum frequency when CPUID leaf 0x16 provides those values.
+- Basic `--help` and `--version` commands.
 
-CPUBoost AI is intended to:
+Unavailable information is shown as unavailable rather than guessed.
 
-- Identify supported Intel and AMD processors.
-- Show processor topology, reported frequency, and available hardware capabilities.
-- Monitor CPU and memory usage, and temperature when reliable sensor data is available.
-- Explain possible causes of slowdowns, such as background workload or thermal limits.
-- Offer understandable, evidence-based recommendations.
-- Provide repeatable benchmarks and transparent before-and-after results.
-- Run with a small resource footprint so older computers can use it too.
+### Important measurement notes
+
+- Reported base and maximum frequencies are not live clock-speed measurements.
+- AVX and AVX2 are shown as CPU hardware flags. This prototype does not yet verify whether the operating system has enabled the required extended register state for application use.
+- Physical-core counts depend on operating-system information and may be unavailable in restricted environments or virtual machines.
+- The current prototype is read-only. It does not change power settings, clocks, voltage, or hardware configuration.
 
 ## Planned features
 
-| Area | Planned capability |
+| Area | Planned capability | Status |
+|---|---|---|
+| CPU identification | Vendor, brand, family/model, topology, instruction features | Initial prototype implemented; testing continues |
+| Live CPU monitoring | CPU utilization and live frequency | Planned |
+| Memory monitoring | RAM utilization and available memory | Planned |
+| Temperature | CPU temperature where trustworthy sensor access exists | Planned |
+| Workload analysis | Identify unusually heavy background workloads | Planned |
+| Safe recommendations | Explain possible performance improvements without risky changes | Planned |
+| AI assistance | Help interpret measurements and prioritize recommendations | Planned |
+| Desktop dashboard | Lightweight Qt interface | Planned |
+| Benchmarking | Repeatable tests and transparent result comparisons | Planned |
+
+## Technology
+
+The project is being built with free and open-source tools wherever practical.
+
+| Technology | Purpose |
 |---|---|
-| CPU identification | Manufacturer, processor name/model, family and model details where available |
-| CPU topology | Physical cores and logical processors/threads |
-| Frequency | Current and reported base/max frequency where the platform exposes them |
-| Architecture | Architecture and supported instruction-set features where detectable |
-| Live monitoring | CPU utilization, memory utilization and frequency |
-| Temperature | CPU temperature when supported by accessible, trustworthy sensors |
-| Workload insights | Identify high CPU usage and notable background workloads |
-| Recommendations | Safe, explainable suggestions based on collected system information |
-| AI assistance | Help interpret workload patterns and prioritize recommendations |
-| Dashboard | Lightweight desktop interface for system health and monitoring |
-| Benchmarking | Repeatable tests and clearly presented results |
+| C++17 | CPU information engine |
+| CMake | Cross-platform build configuration |
+| Python | Planned monitoring and analysis components |
+| Qt | Planned desktop dashboard |
+| Git and GitHub | Version control, collaboration, and releases |
 
-**Important:** Sensor availability and reporting accuracy vary by processor, firmware, operating system, drivers, and permissions. Missing data will be shown as unavailable rather than guessed.
+The first CPU information utility has no third-party C++ library dependency.
 
-## Technology stack
+## Build from source
 
-The intended stack is:
+### Requirements
 
-- **C++** — low-level CPU information and performance-sensitive system components.
-- **Python** — monitoring coordination, analysis, and future AI-assisted recommendations.
-- **Qt** — cross-platform desktop interface.
-- **CMake** — build configuration.
-- **Git and GitHub** — source control, collaboration, and project tracking.
+- CMake 3.16 or newer.
+- A C++17 compiler.
+- Windows: Visual Studio 2019/2022 C++ build tools, or another supported C++17 toolchain.
+- Linux: GCC or Clang with C++17 support.
 
-The implementation may use different platform-specific APIs where necessary. Free and open-source dependencies are preferred.
+### Windows
 
-## Project architecture (planned)
+Open PowerShell or Command Prompt in the repository folder:
 
-The project is expected to grow into these components:
+```powershell
+cmake -S . -B build
+cmake --build build --config Release
+.\build\Release\cpuboost-ai.exe
+```
 
-1. **CPU Detection Engine** — gathers processor identity, topology, frequency information, and supported instruction features.
-2. **Monitoring Engine** — collects CPU and memory usage, plus supported temperature and frequency readings.
-3. **Analysis Engine** — interprets measurements and identifies possible performance bottlenecks.
-4. **Recommendation Engine** — produces safe, explainable suggestions.
-5. **AI Decision Engine** — helps interpret patterns and prioritize recommendations; it must not bypass safety rules.
-6. **Desktop Dashboard** — presents system information, live monitoring, and recommendations.
-7. **Benchmark Module** — runs controlled tests and reports results.
+Check the version or help:
 
-These are design targets, not existing modules yet.
+```powershell
+.\build\Release\cpuboost-ai.exe --version
+.\build\Release\cpuboost-ai.exe --help
+```
+
+### Linux
+
+Open a terminal in the repository folder:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel 2
+./build/cpuboost-ai
+```
+
+Check the version or help:
+
+```bash
+./build/cpuboost-ai --version
+./build/cpuboost-ai --help
+```
 
 ## Development roadmap
 
-The project will be developed in small, verifiable milestones.
+The project will move forward through small, verifiable milestones.
 
 | Stage | Milestone | Status |
 |---|---|---|
-| 1 | Repository setup and professional documentation | In progress |
-| 2 | CPU detection engine | Not started |
+| 1 | Repository setup and professional documentation | Completed |
+| 2 | CPU detection engine | Initial implementation; Windows and target-hardware testing pending |
 | 3 | CPU and memory monitoring | Not started |
 | 4 | Safe performance analysis and recommendations | Not started |
 | 5 | AI-assisted decision engine | Not started |
 | 6 | Lightweight desktop dashboard | Not started |
 | 7 | Benchmarking and result reports | Not started |
-| 8 | Intel/AMD and Windows/Linux compatibility testing | Not started |
+| 8 | Intel/AMD and Windows/Linux compatibility testing | In progress |
 
-A milestone will only be marked complete after its implementation has been tested.
+A milestone will only be marked complete after the implementation has been tested on its intended platforms and hardware.
 
-## Hardware and platform compatibility
+## Compatibility and first test machine
 
-### Initial development machine
-
-The first development and testing target is:
+The initial development target is:
 
 | Component | Specification |
 |---|---|
@@ -99,73 +132,57 @@ The first development and testing target is:
 | Operating system | Tiny11 64-bit |
 | Graphics | Integrated graphics; no dedicated GPU |
 
-This low-end machine will help keep resource usage under control.
+The long-term goal is support for Intel and AMD processors on Windows and Linux. Compatibility is not guaranteed for every CPU, sensor, firmware, or operating-system version until it has been tested.
 
-### Planned support
+## Safety policy
 
-- **Processor vendors:** Intel and AMD.
-- **Operating systems:** Windows and Linux.
-- **Hardware range:** Older and modern systems, subject to testing and available system interfaces.
-
-Compatibility is a development goal, not a claim that every processor, sensor, or operating-system version is already supported.
-
-## Safety and transparency policy
-
-CPUBoost AI prioritizes hardware safety and system stability.
+CPUBoost AI prioritizes hardware safety, stability, and transparency.
 
 The project will never:
 
-- Force CPU overclocking.
-- Force CPU voltage changes.
+- Force CPU overclocking or voltage changes.
 - Disable thermal protection or essential safety mechanisms.
 - Attempt unsupported hardware modifications.
 - Claim to unlock physically unavailable CPU cores or features.
-- Promise that a particular processor can perform like a substantially more powerful model.
+- Promise that software can turn a low-end processor into a high-end processor.
 
 The project will:
 
-- Prefer read-only monitoring and recommendations initially.
+- Prefer read-only monitoring and recommendations.
 - Explain why a recommendation is being made.
 - Respect operating-system and firmware power-management controls.
 - Treat temperature and sensor readings cautiously.
-- Avoid applying system-level changes without clear user awareness and consent.
+- Require clear user awareness and consent before any future system-level setting change.
 - Report limitations and unavailable measurements honestly.
 
-**CPUBoost AI cannot change the physical limits of a processor.** Actual performance depends on the CPU, cooling, power limits, memory, software, and workload.
+**CPUBoost AI cannot change the physical limits of a processor.** Real performance depends on the CPU, cooling, power limits, memory, software, and workload.
 
-## Development status
+## CI and releases
 
-**Status: Early development**
+GitHub Actions is configured to build the project on Windows and Linux when changes are pushed to `main` or a pull request is opened.
 
-At this stage:
+A tagged version matching `v*` starts the release workflow. It builds platform binaries and creates a GitHub Release with generated release notes.
 
-- The public GitHub repository has been created.
-- The MIT License is present.
-- Project documentation is being established.
-- No CPU detection or optimization code has been implemented yet.
-
-The next engineering milestone after documentation is a small, testable CPU detection engine. The first target will be collecting basic processor information on the initial Intel test machine before expanding support.
+**Do not create the stable `v1.0.0` tag yet.** The project will be ready for 1.0.0 only after the planned core features are implemented, Windows and Linux builds pass, and testing is completed on supported Intel and AMD hardware. Development versions will use the `0.x` series until then.
 
 ## Contributing
 
-Contributions, bug reports, testing feedback, and suggestions are welcome.
-
-As development progresses, please include:
+Bug reports, testing feedback, and suggestions are welcome. When reporting a problem, include:
 
 - Operating system and version.
 - CPU manufacturer and model, if known.
-- Steps to reproduce a problem.
+- Steps to reproduce the problem.
 - Relevant logs or screenshots, with personal information removed.
 
-Please do not submit private information, passwords, or sensitive system data.
+Never share passwords, private keys, or other sensitive system information.
 
 ## License
 
-CPUBoost AI is distributed under the **MIT License**. See the [LICENSE](LICENSE) file for the full license text.
+CPUBoost AI is distributed under the **MIT License**. See [LICENSE](LICENSE) for the complete license text.
 
 ---
 
 **Developer:** Karan Mandal  
 **Repository:** [karanmandal4611/CPUBoost-AI](https://github.com/karanmandal4611/CPUBoost-AI)
 
-*Built as an open-source learning and engineering project, with a focus on useful measurements, safe recommendations, and realistic performance improvements.*
+*An open-source engineering project focused on useful measurements, safe recommendations, and realistic performance improvements.*
