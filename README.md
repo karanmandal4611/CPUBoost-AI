@@ -135,7 +135,7 @@ The project will:
 
 ## Development status
 
-<badge color="warning">Early development</badge>
+**Status: Early development**
 
 At this stage:
 
