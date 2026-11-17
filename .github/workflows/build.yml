@@ -35,3 +35,19 @@ jobs:
       - name: Verify application version (Linux)
         if: runner.os == 'Linux'
         run: ./build/cpuboost-ai --version
+
+      - name: Upload Windows test build
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpuboost-windows-x64
+          path: build/Release/cpuboost-ai.exe
+          if-no-files-found: error
+
+      - name: Upload Linux test build
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpuboost-linux-x64
+          path: build/cpuboost-ai
+          if-no-files-found: error
