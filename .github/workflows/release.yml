@@ -1,0 +1,65 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build release binary on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release --parallel 2
+
+      - name: Package Windows binary
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item build/Release/cpuboost-ai.exe dist/cpuboost-ai-windows-x64.exe
+
+      - name: Package Linux binary
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p dist
+          cp build/cpuboost-ai dist/cpuboost-ai-linux-x64
+
+      - name: Upload platform binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpuboost-${{ matrix.os }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/**/*
+          fail_on_unmatched_files: true
